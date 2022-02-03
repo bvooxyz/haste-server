@@ -1,19 +1,34 @@
 version: '3.0'
+
 services:
   haste-server:
     build: .
+    environment:
+      - STORAGE_TYPE=redis
+      - STORAGE_HOST=redis
+      - STORAGE_PORT=6379
+      - STORAGE_DB=2
     networks:
       - db-network
-    environment:
-      - STORAGE_TYPE=memcached
-      - STORAGE_HOST=memcached
-      - STORAGE_PORT=11211
     ports:
       - 7777:7777
-  memcached:
-    image: memcached:latest
+    depends_on:
+      - redis
+  redis:
+    image: docker.io/bitnami/redis:6.2
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    volumes:
+      - 'redis_data:/bitnami/redis/data'
+    expose:
+      - 6379
     networks:
       - db-network
+
+volumes:
+  redis_data:
+    driver: local
 
 networks:
   db-network:
